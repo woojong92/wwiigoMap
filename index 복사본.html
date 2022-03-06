@@ -1,0 +1,95 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="utf-8">
+    <title>WakeUf Wifi Roaming Zone</title>
+    <!-- <meta http-equiv="Content-Security-Policy" content="upgrade-insecure-requests"> -->
+    <link rel="stylesheet" href="./reset.css" />
+    <style>
+        html {margin: 0; padding: 0;}
+        body {margin: 0; padding: 0;}
+    </style>
+</head>
+<body>
+<div id="map" style="width:100%;height:100vh;position:relative;overflow:hidden;"></div>
+
+<script type="text/javascript" src="//dapi.kakao.com/v2/maps/sdk.js?appkey=571f870e978bd00a7ab76a0a50fab72e&libraries=clusterer"></script>
+<script>
+
+var mapContainer = document.getElementById('map'), // 지도를 표시할 div 
+    mapOption = { 
+        center: new kakao.maps.LatLng(33.450701, 126.570667), // 지도의 중심좌표
+        level: 10 // 지도의 확대 레벨
+    };  
+
+var map = new kakao.maps.Map(mapContainer, mapOption); // 지도를 생성합니다
+
+// 마커 클러스터러를 생성합니다 
+var clusterer = new kakao.maps.MarkerClusterer({
+    map: map, // 마커들을 클러스터로 관리하고 표시할 지도 객체 
+    averageCenter: true, // 클러스터에 포함된 마커들의 평균 위치를 클러스터 마커 위치로 설정 
+    minLevel: 5 ,// 클러스터 할 최소 지도 레벨 
+    texts: ' '
+});
+
+let circles = [];
+
+fetch("http://112.133.52.69:8101/radius/ap/list/all")
+  .then(function(response) {
+     
+    return response.json();
+  })
+  .then(function(positions) {
+        console.log(positions);
+        const markers = positions.map((position, index) => new kakao.maps.Marker({
+            position : new kakao.maps.LatLng(position.latitude, position.longitude),
+            opacity: 0.001,
+        }));
+
+        clusterer.addMarkers(markers);
+
+        const _circles = positions.map((position, index) =>  new kakao.maps.Circle({
+                center : new kakao.maps.LatLng(position.latitude, position.longitude),  // 원의 중심좌표 입니다 
+                radius: 50, // 미터 단위의 원의 반지름입니다 
+                strokeWeight: 0, // 선의 두께입니다 
+                strokeColor: '#75B8FA', // 선의 색깔입니다
+                strokeOpacity: 1, // 선의 불투명도 입니다 1에서 0 사이의 값이며 0에 가까울수록 투명합니다
+                strokeStyle: 'line', // 선의 스타일 입니다
+                fillColor: '#70ADFF', // 채우기 색깔입니다
+                fillOpacity: 0.3  // 채우기 불투명도 입니다   
+        }));
+
+        circles = _circles;
+
+    })
+  .catch(error => console.log('Error: ', error));
+
+  const setCircles = (map) => {
+      for (let i = 0; i < circles.length ; i++ ){
+          circles[i].setMap(map);
+      }
+  }
+
+  const showCircles = () => {
+      setCircles(map);
+  }
+
+  const hideCircles = () => {
+      setCircles(null);
+  }
+
+
+  kakao.maps.event.addListener(map, 'zoom_changed', function() {
+    var level = map.getLevel();
+    console.log('zoom_changed level : ', level);
+    // hideCircles();
+    console.log(circles);
+    hideCircles()
+    if(level < 5) {
+        showCircles()
+    }
+  });
+
+</script>
+</body>
+</html>
