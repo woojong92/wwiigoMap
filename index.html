@@ -115,7 +115,7 @@
       switch(type) {
           case 'search' : {
             setLocations([]);
-            ps.keywordSearch(data, placesSearchCB); 
+            setTimeout(()=>{ps.keywordSearch(data, placesSearchCB); },100);
             return;
           } 
           case 'nextPage' : {
