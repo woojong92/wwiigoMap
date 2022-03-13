@@ -43,8 +43,11 @@
     if (status === kakao.maps.services.Status.OK) {
   
           pg = pagination;
-          setLocations([...locations, ...data]);
 
+          const newLoactions = [...locations, ...data]
+          setLocations(newLoactions);
+        
+          displayPlaces(newLoactions);
           console.log(data);
           console.log(pagination);
 
